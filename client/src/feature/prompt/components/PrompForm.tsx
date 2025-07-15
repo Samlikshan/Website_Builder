@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { generateHTML } from "../../../lib/generete";
 
 type PromptSchema = {
   purpose?: string;
@@ -29,42 +29,69 @@ const colorThemes = [
   { name: "Minimal White", value: "white", color: "#f3f4f6" },
 ];
 
+const tones = ["Professional", "Minimalist", "Playful", "Bold", "Clean"];
+const sections = [
+  "Hero",
+  "Features",
+  "Testimonials",
+  "Pricing",
+  "FAQ",
+  "Contact",
+];
+const fonts = ["Open Sans", "Inter", "Lato", "Roboto", "Poppins"];
 const languages = ["English", "Spanish", "German", "French", "Hindi"];
 
 export const PromptForm: React.FC<{ onGenerated: (html: string) => void }> = ({
   onGenerated,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [language, setLanguage] = useState("English");
   const [rawPrompt, setRawPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clarificationMessage, setClarificationMessage] = useState<
+    string | null
+  >(null);
+
+  const [answers, setAnswers] = useState<PromptSchema>({
+    purpose: "",
+    layout: [],
+    color: "",
+    tone: "",
+    font: "",
+    language: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
-    const promptData: PromptSchema = {
-      purpose: selectedCategory || undefined,
-      color: selectedColor || undefined,
-      language,
-      rawPrompt,
-    };
+    setClarificationMessage(null);
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/generate",
-        promptData
-      );
-      onGenerated(res.data.html);
-    } catch (error) {
-      console.log(error);
-      setError("Something went wrong.");
+      const html = await generateHTML({ ...answers, rawPrompt });
+      onGenerated(html);
+    } catch (err) {
+      if (err instanceof Error && err?.type === "clarification") {
+        setClarificationMessage(err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleArrayField = (key: keyof PromptSchema, value: string) => {
+    const current = (answers[key] as string[]) || [];
+    const updated = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+
+    setAnswers((prev) => ({
+      ...prev,
+      [key]: updated,
+    }));
   };
 
   return (
@@ -72,36 +99,34 @@ export const PromptForm: React.FC<{ onGenerated: (html: string) => void }> = ({
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded-lg shadow-lg border max-w-2xl w-full mx-auto"
     >
-      <h2 className="text-xl font-semibold mb-4 text-center">
+      <h2 className="text-xl font-semibold mb-2 text-center">
         Build your Website with AI
       </h2>
+      <p className="text-center text-sm text-gray-500 mb-4">
+        Describe your webpage and choose your preferences — we’ll do the rest!
+      </p>
 
-      {/* Category Chips */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {categories.map((cat) => (
-          <button
-            type="button"
-            key={cat}
-            onClick={() =>
-              setSelectedCategory(cat === selectedCategory ? null : cat)
-            }
-            className={`px-3 py-1 rounded-full border text-sm transition ${
-              selectedCategory === cat
-                ? "bg-black text-white border-black"
-                : "bg-white text-gray-700 border-gray-300 hover:border-gray-500"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {clarificationMessage && (
+        <div className="flex items-start gap-3 mb-4 p-4 bg-gray-100 rounded-md border border-gray-300 shadow-sm">
+          <div className="text-2xl">🤖</div>
+          <div>
+            <p className="text-sm text-gray-800 font-medium mb-1">
+              {clarificationMessage}
+            </p>
+            <p className="text-xs text-gray-500">
+              Please answer the following so I can build the best website for
+              you.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {/* Prompt Box */}
+      {/* Prompt Textarea */}
       <div className="relative mb-4">
         <textarea
           rows={4}
           className="w-full border rounded px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black resize-none"
-          placeholder="Describe your webpage - it's purpose, section layout, specific features you want to showcase..."
+          placeholder="e.g. I need a website for my fitness course with testimonials and signup"
           value={rawPrompt}
           onChange={(e) => setRawPrompt(e.target.value)}
         />
@@ -115,46 +140,137 @@ export const PromptForm: React.FC<{ onGenerated: (html: string) => void }> = ({
         </button>
       </div>
 
-      {/* Language + Color Theme */}
-      <div className="flex justify-between items-center mb-6 gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">
-            Webpage Language
-          </label>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="w-full border rounded px-3 py-2 text-sm"
-          >
-            {languages.map((lang) => (
-              <option key={lang}>{lang}</option>
-            ))}
-          </select>
+      {/* Purpose */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Purpose</label>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() =>
+                setAnswers((prev) => ({
+                  ...prev,
+                  purpose: prev.purpose === cat ? "" : cat,
+                }))
+              }
+              className={`px-3 py-1 rounded-full border text-sm transition ${
+                answers.purpose === cat
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
+      </div>
 
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">Color Theme</label>
-          <div className="flex items-center gap-2 mt-1">
-            {colorThemes.map((theme) => (
-              <button
-                key={theme.value}
-                type="button"
-                onClick={() =>
-                  setSelectedColor(
-                    selectedColor === theme.name ? null : theme.name
-                  )
-                }
-                className={`w-6 h-6 rounded-full border-2 transition ${
-                  selectedColor === theme.name
-                    ? "border-black scale-110"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: theme.color }}
-                title={theme.name}
-              />
-            ))}
-          </div>
+      {/* Layout */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Page Sections</label>
+        <div className="flex flex-wrap gap-2">
+          {sections.map((section) => (
+            <button
+              key={section}
+              type="button"
+              onClick={() => toggleArrayField("layout", section)}
+              className={`px-3 py-1 rounded-full border text-sm transition ${
+                answers.layout?.includes(section)
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              {section}
+            </button>
+          ))}
         </div>
+      </div>
+
+      {/* Color Theme */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Color Theme</label>
+        <div className="flex gap-2 mt-1">
+          {colorThemes.map((theme) => (
+            <button
+              key={theme.value}
+              type="button"
+              onClick={() =>
+                setAnswers((prev) => ({
+                  ...prev,
+                  color: prev.color === theme.name ? "" : theme.name,
+                }))
+              }
+              className={`w-6 h-6 rounded-full border-2 transition ${
+                answers.color === theme.name
+                  ? "border-black scale-110"
+                  : "border-gray-300"
+              }`}
+              style={{ backgroundColor: theme.color }}
+              title={theme.name}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Tone */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Tone</label>
+        <div className="flex flex-wrap gap-2">
+          {tones.map((tone) => (
+            <button
+              key={tone}
+              type="button"
+              onClick={() =>
+                setAnswers((prev) => ({
+                  ...prev,
+                  tone: prev.tone === tone ? "" : tone,
+                }))
+              }
+              className={`px-3 py-1 rounded-full border text-sm transition ${
+                answers.tone === tone
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              {tone}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Language */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Language</label>
+        <select
+          className="w-full border rounded px-3 py-2 text-sm"
+          value={answers.language || ""}
+          onChange={(e) =>
+            setAnswers((prev) => ({ ...prev, language: e.target.value }))
+          }
+        >
+          <option value="">Select language</option>
+          {languages.map((lang) => (
+            <option key={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Font */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Font</label>
+        <select
+          className="w-full border rounded px-3 py-2 text-sm"
+          value={answers.font || ""}
+          onChange={(e) =>
+            setAnswers((prev) => ({ ...prev, font: e.target.value }))
+          }
+        >
+          <option value="">Choose font</option>
+          {fonts.map((font) => (
+            <option key={font}>{font}</option>
+          ))}
+        </select>
       </div>
 
       {/* Submit */}

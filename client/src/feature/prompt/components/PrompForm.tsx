@@ -41,9 +41,9 @@ const sections = [
 const fonts = ["Open Sans", "Inter", "Lato", "Roboto", "Poppins"];
 const languages = ["English", "Spanish", "German", "French", "Hindi"];
 
-export const PromptForm: React.FC<{ onGenerated: (html: string) => void }> = ({
-  onGenerated,
-}) => {
+export const PromptForm: React.FC<{
+  onGenerated: (html: string, css: string) => void;
+}> = ({ onGenerated }) => {
   const [rawPrompt, setRawPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,8 +67,9 @@ export const PromptForm: React.FC<{ onGenerated: (html: string) => void }> = ({
     setClarificationMessage(null);
 
     try {
-      const html = await generateHTML({ ...answers, rawPrompt });
-      onGenerated(html);
+      const { html, css } = await generateHTML({ ...answers, rawPrompt });
+
+      onGenerated(html, css);
     } catch (err) {
       if (err instanceof Error && err?.type === "clarification") {
         setClarificationMessage(err.message);

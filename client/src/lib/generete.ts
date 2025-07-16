@@ -10,10 +10,13 @@ export type PromptSchema = {
   rawPrompt?: string;
 };
 
-export const generateHTML = async (data: PromptSchema): Promise<string> => {
-  const response = await axiosInstance.post<{ html: string }>(
+export const generateHTML = async (
+  data: PromptSchema
+): Promise<{ html: string; css: string }> => {
+  const response = await axiosInstance.post<{ html: string; css: string }>(
     "/generate",
     data
   );
-  return response.data.html;
+
+  return response.data;
 };

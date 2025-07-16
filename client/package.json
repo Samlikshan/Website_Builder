@@ -10,11 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@grapesjs/studio-sdk": "^1.0.55",
+    "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/vite": "^4.1.11",
     "@types/axios": "^0.14.4",
     "axios": "^1.10.0",
+    "grapesjs": "^0.22.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.3"
   },
   "devDependencies": {

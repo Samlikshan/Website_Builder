@@ -7,6 +7,7 @@ import { generateHTML } from "../../core/usecases/generateHtml";
 export async function generateHandler(req: Request, res: Response) {
   try {
     const { rawPrompt } = req.body;
+
     if (!rawPrompt || typeof rawPrompt !== "string") {
       return res.status(400).json({ error: "Prompt is required" });
     }
@@ -20,9 +21,9 @@ export async function generateHandler(req: Request, res: Response) {
     }
 
     const finalPrompt = buildFinalPrompt(req.body);
-    const html = await generateHTML(finalPrompt);
+    const { html, css } = await generateHTML(finalPrompt);
 
-    return res.status(200).json({ html });
+    return res.status(200).json({ html, css });
   } catch (err) {
     console.error("Error in generateHandler:", err);
     return res.status(500).json({ error: "Something went wrong" });

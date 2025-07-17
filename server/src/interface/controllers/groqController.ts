@@ -13,8 +13,7 @@ export async function generateHandler(
   next: NextFunction
 ) {
   try {
-    const { rawPrompt } = req.body;
-
+    const { rawPrompt, provider } = req.body;
     if (!rawPrompt || typeof rawPrompt !== "string") {
       throw createHttpError("Prompt is required", 400);
     }
@@ -34,7 +33,7 @@ export async function generateHandler(
     }
 
     const finalPrompt = buildFinalPrompt(req.body);
-    const { html, css } = await generateHTML(finalPrompt);
+    const { html, css } = await generateHTML(finalPrompt, provider);
 
     return res.status(200).json({ html, css });
   } catch (error: unknown) {
@@ -59,7 +58,7 @@ export async function generateUpdateHandler(
   next: NextFunction
 ) {
   try {
-    const { prompt, html, css } = req.body;
+    const { prompt, html, css, provider } = req.body;
 
     if (!prompt || !html) {
       return res
@@ -67,7 +66,7 @@ export async function generateUpdateHandler(
         .json({ error: "Prompt and existing HTML are required" });
     }
 
-    const result = await updateHTML({ prompt, html, css });
+    const result = await updateHTML({ prompt, html, css, provider });
     return res.status(200).json(result);
   } catch (error: unknown) {
     const err = error as AxiosError;

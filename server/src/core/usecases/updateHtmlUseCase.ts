@@ -15,10 +15,12 @@ export async function updateHTML({
   prompt,
   html,
   css = "",
+  provider = "groq",
 }: {
   prompt: string;
   html: string;
   css?: string;
+  provider: "groq" | "openai";
 }): Promise<{ html: string; css: string }> {
   const cleanedHtml = removeImageSrcAttributes(html);
   const cleanedCss = removeBase64ImagesFromCSS(css);
@@ -34,7 +36,7 @@ ${cleanedCss}
 
 Return ONLY the updated HTML and CSS (wrapped in <style> if needed). Do NOT include explanations.
 `;
-  const rawResponse = await callAI(fullPrompt, SystemPrompts.UPDATE);
+  const rawResponse = await callAI(fullPrompt, SystemPrompts.UPDATE, provider);
   let response = extractHtmlAndCss(rawResponse);
   html = extractCleanHTML(response.html);
   html = extractCleanHTML(html);

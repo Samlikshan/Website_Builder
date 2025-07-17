@@ -12,6 +12,7 @@ type PromptSchema = {
   font?: string;
   language?: string;
   rawPrompt?: string;
+  provider: "groq" | "openai";
 };
 
 const categories = [
@@ -87,6 +88,7 @@ export const PromptForm: React.FC<{
     tone: "",
     font: "",
     language: "",
+    provider: "groq",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,30 +155,38 @@ export const PromptForm: React.FC<{
           </div>
         )}
 
-        {/* Prompt Textarea */}
         <div className="relative mb-6">
           <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
             <Wand2 className="w-4 h-4" />
             Describe Your Website
           </label>
-          <div className="relative">
-            <textarea
-              rows={3}
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 bg-gray-50/50 placeholder-gray-400"
-              placeholder="e.g. I need a modern fitness course website with video testimonials, pricing tiers, and a sleek signup form..."
-              value={rawPrompt}
-              onChange={(e) => setRawPrompt(e.target.value)}
-            />
-            <button
-              type="button"
-              disabled
-              className="absolute bottom-3 right-3 text-xs text-gray-400 px-3 py-1.5 border border-gray-200 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-gray-50 transition-colors"
-              title="Coming soon"
-            >
-              <Sparkles className="w-3 h-3 inline mr-1" />
-              Enhance
-            </button>
-          </div>
+          <textarea
+            rows={3}
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 bg-gray-50/50 placeholder-gray-400"
+            placeholder="e.g. I need a modern fitness course website..."
+            value={rawPrompt}
+            onChange={(e) => setRawPrompt(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Choose AI Provider
+          </label>
+          <select
+            className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50/50 transition-all duration-200"
+            value={answers.provider || "groq"}
+            onChange={(e) =>
+              setAnswers((prev) => ({
+                ...prev,
+                provider: (e.target.value as "groq") || "openai",
+              }))
+            }
+          >
+            <option value="groq">Default (Groq)</option>
+            <option value="openai">OpenAI (Slow but High Quality)</option>
+            <option value="groq">Groq (Faster but Lower Quality)</option>
+          </select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

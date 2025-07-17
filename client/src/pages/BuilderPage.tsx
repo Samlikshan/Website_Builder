@@ -24,7 +24,6 @@ const BuilderPage = () => {
       style: css || "",
     });
 
-    // Wait for editor to load before appending custom UI
     editor.on("load", () => {
       const styleSidebar = document.querySelector(".gjs-sm-sectors");
       if (styleSidebar) {
@@ -53,32 +52,24 @@ const BuilderPage = () => {
         textarea.style.color = "#eee";
         textarea.style.marginBottom = "10px";
 
-        const checkboxLabel = document.createElement("label");
-        checkboxLabel.style.display = "flex";
-        checkboxLabel.style.alignItems = "center";
-        checkboxLabel.style.gap = "6px";
-        checkboxLabel.style.fontSize = "12px";
-        checkboxLabel.style.marginBottom = "10px";
+        const providerSelect = document.createElement("select");
+        providerSelect.style.width = "100%";
+        providerSelect.style.marginBottom = "10px";
+        providerSelect.style.padding = "6px";
+        providerSelect.style.borderRadius = "4px";
+        providerSelect.style.background = "#1f1f1f";
+        providerSelect.style.color = "#eee";
+        providerSelect.style.border = "1px solid #555";
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkboxLabel.appendChild(checkbox);
-        checkboxLabel.append("Apply to all sections");
+        const groqOption = document.createElement("option");
+        groqOption.value = "groq";
+        groqOption.text = "Groq (LLaMA 3.3)";
+        const openaiOption = document.createElement("option");
+        openaiOption.value = "openai";
+        openaiOption.text = "OpenAI (GPT-4.1)";
 
-        const buttonRow = document.createElement("div");
-        buttonRow.style.display = "flex";
-        buttonRow.style.justifyContent = "space-between";
-
-        const improveBtn = document.createElement("button");
-        improveBtn.innerText = "✨ Improve";
-        Object.assign(improveBtn.style, {
-          background: "transparent",
-          color: "#ccc",
-          border: "1px solid #444",
-          padding: "6px 12px",
-          borderRadius: "4px",
-          cursor: "pointer",
-        });
+        providerSelect.appendChild(openaiOption);
+        providerSelect.appendChild(groqOption);
 
         const generateBtn = document.createElement("button");
         generateBtn.innerText = "Generate";
@@ -89,25 +80,31 @@ const BuilderPage = () => {
           padding: "6px 12px",
           borderRadius: "4px",
           cursor: "pointer",
+          width: "100%",
         });
 
         generateBtn.onclick = async () => {
           const prompt = textarea.value.trim();
+          const provider = providerSelect.value as "groq" | "openai";
+
           if (!prompt) return;
+
           const currentHtml = editor.getHtml();
           const currentCss = editor.getCss() || "";
+
           generateBtn.innerText = "Thinking...";
           generateBtn.disabled = true;
+
           try {
             const { html, css } = await updateBuilderContent({
               prompt,
               html: currentHtml,
               css: currentCss,
+              provider,
             });
 
             editor.setComponents(html || "");
             editor.setStyle(css || "");
-
             textarea.value = "";
           } catch (err) {
             console.log(err);
@@ -118,14 +115,10 @@ const BuilderPage = () => {
           }
         };
 
-        buttonRow.appendChild(improveBtn);
-        buttonRow.appendChild(generateBtn);
-
         section.appendChild(title);
         section.appendChild(textarea);
-        section.appendChild(checkboxLabel);
-        section.appendChild(buttonRow);
-
+        section.appendChild(providerSelect);
+        section.appendChild(generateBtn);
         styleSidebar.appendChild(section);
       }
     });

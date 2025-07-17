@@ -40,12 +40,14 @@ interface UpdateRequest {
   prompt: string;
   html: string;
   css: string;
+  provider: "groq" | "openai";
 }
 
 export const updateBuilderContent = async ({
   prompt,
   html,
   css,
+  provider,
 }: UpdateRequest) => {
   const cleanedHtml = removeImageSrcAttributes(html);
   const cleanedCss = removeBase64ImagesFromCSS(css);
@@ -53,6 +55,7 @@ export const updateBuilderContent = async ({
     prompt,
     html: cleanedHtml,
     css: cleanedCss,
+    provider,
   });
 
   return response.data;

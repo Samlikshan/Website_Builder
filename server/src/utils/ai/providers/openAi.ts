@@ -33,6 +33,5 @@ export async function callOpenAI(
 
   const content = response.body.choices?.[0]?.message?.content;
   if (!content) throw createHttpError("OpenAI API returned no content", 400);
-  console.log(content);
   return content;
 }

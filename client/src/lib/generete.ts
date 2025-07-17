@@ -1,3 +1,7 @@
+import {
+  removeBase64ImagesFromCSS,
+  removeImageSrcAttributes,
+} from "../utils/cleanAiInputs";
 import { axiosInstance } from "./axios";
 
 export type PromptSchema = {
@@ -9,10 +13,21 @@ export type PromptSchema = {
   language?: string;
   rawPrompt?: string;
 };
+type HTMLCSSResponse = {
+  html: string;
+  css: string;
+};
 
+type ClarificationResponse = {
+  type: "clarification";
+  message: string;
+  questions?: string[];
+};
+
+type GenerateHTMLResponse = HTMLCSSResponse | ClarificationResponse;
 export const generateHTML = async (
   data: PromptSchema
-): Promise<{ html: string; css: string }> => {
+): Promise<GenerateHTMLResponse> => {
   const response = await axiosInstance.post<{ html: string; css: string }>(
     "/generate",
     data
@@ -32,10 +47,12 @@ export const updateBuilderContent = async ({
   html,
   css,
 }: UpdateRequest) => {
+  const cleanedHtml = removeImageSrcAttributes(html);
+  const cleanedCss = removeBase64ImagesFromCSS(css);
   const response = await axiosInstance.post("/generate/update", {
     prompt,
-    html,
-    css,
+    html: cleanedHtml,
+    css: cleanedCss,
   });
 
   return response.data;

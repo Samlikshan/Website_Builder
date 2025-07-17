@@ -98,7 +98,7 @@ export const PromptForm: React.FC<{
     try {
       const result = await generateHTML({ ...answers, rawPrompt });
 
-      if (result?.type === "clarification") {
+      if ("type" in result && result.type === "clarification") {
         setClarification({
           message: result.message,
           questions: result.questions || [],
@@ -106,17 +106,19 @@ export const PromptForm: React.FC<{
         return;
       }
 
-      if (result?.html && result?.css) {
+      if ("html" in result && "css" in result) {
         onGenerated(result.html, result.css);
       } else {
         setError("Unexpected response from server.");
       }
-    } catch (err: any) {
-      console.log(err);
-      handleApiError(err);
-      // setError(err?.message || "Something went wrong.");
-    } finally {
-      setLoading(false);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.log(err.message);
+        handleApiError(err);
+      } else {
+        console.log(err);
+        setError("Unknown error occurred.");
+      }
     }
   };
 

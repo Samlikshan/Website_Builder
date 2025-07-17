@@ -4,6 +4,7 @@ import "grapesjs/dist/css/grapes.min.css";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/store";
 import { updateBuilderContent } from "../lib/generete";
+import { handleApiError } from "../utils/handleApiError";
 
 const BuilderPage = () => {
   const editorRef = useRef<HTMLDivElement | null>(null);
@@ -109,7 +110,8 @@ const BuilderPage = () => {
 
             textarea.value = "";
           } catch (err) {
-            alert("Something went wrong.");
+            console.log(err);
+            handleApiError(err);
           } finally {
             generateBtn.innerText = "Generate";
             generateBtn.disabled = false;

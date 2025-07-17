@@ -34,7 +34,6 @@ ${cleanedCss}
 
 Return ONLY the updated HTML and CSS (wrapped in <style> if needed). Do NOT include explanations.
 `;
-  console.log(cleanedCss);
   const rawResponse = await callAI(fullPrompt, SystemPrompts.UPDATE);
   let response = extractHtmlAndCss(rawResponse);
   html = extractCleanHTML(response.html);

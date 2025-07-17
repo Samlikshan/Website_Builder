@@ -32,6 +32,5 @@ export async function callGroq(
   );
   const content = response.data.choices?.[0]?.message?.content;
   if (!content) throw createHttpError("Groq API returned no content", 400);
-  console.log(content);
   return content;
 }

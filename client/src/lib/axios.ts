@@ -16,18 +16,13 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-type PromptError = {
-  type?: "clarification" | string;
-  message?: string;
-};
-
 const formatApiError = (error: AxiosError): Error & { type?: string } => {
   const formatted = new Error("Something went wrong") as Error & {
     type?: string;
   };
 
   if (error.response?.data) {
-    const data = error.response.data as PromptError;
+    const data = error.response.data as { message?: string; type?: string };
     formatted.message = data.message || formatted.message;
     formatted.type = data.type;
   } else if (error.request) {

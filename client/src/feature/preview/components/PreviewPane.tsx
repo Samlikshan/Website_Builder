@@ -17,6 +17,7 @@ export const PreviewPane: React.FC<Props> = ({ html, css }) => {
         <html lang="en">
         <head>
           <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>${css}</style>
         </head>
         <body>${html}</body>
@@ -27,13 +28,11 @@ export const PreviewPane: React.FC<Props> = ({ html, css }) => {
   }, [html, css]);
 
   return (
-    <div className="w-full h-[85vh] border rounded overflow-hidden shadow">
-      <iframe
-        ref={iframeRef}
-        title="Website Preview"
-        className="w-full h-full"
-        sandbox="allow-scripts allow-forms allow-same-origin"
-      />
-    </div>
+    <iframe
+      ref={iframeRef}
+      title="Website Preview"
+      className="w-full h-[calc(100%-40px)]"
+      sandbox="allow-scripts allow-forms allow-same-origin"
+    />
   );
 };

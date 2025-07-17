@@ -119,6 +119,8 @@ export const PromptForm: React.FC<{
         console.log(err);
         setError("Unknown error occurred.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 

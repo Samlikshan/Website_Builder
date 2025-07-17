@@ -1,6 +1,7 @@
 import axios from "axios";
+import { createHttpError } from "../../httpError";
 
-export async function callGroqAPI(
+export async function callGroq(
   prompt: string,
   systemPrompts: string
 ): Promise<string> {
@@ -30,7 +31,7 @@ export async function callGroqAPI(
     }
   );
   const content = response.data.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Groq API returned no content");
-
+  if (!content) throw createHttpError("Groq API returned no content", 400);
+  console.log(content);
   return content;
 }

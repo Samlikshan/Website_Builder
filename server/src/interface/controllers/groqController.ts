@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { isPromptVague } from "../../utils/prompChecker";
 import { followUpQuestions } from "../../constants/followUpQuestions";
 import { buildFinalPrompt } from "../../utils/buildPrompt";
-import { generateHTML } from "../../core/usecases/generateHtml";
+import { generateHTML } from "../../core/usecases/generateHtmlUseCase";
 import { updateHTML } from "../../core/usecases/updateHtmlUseCase";
 import { createHttpError } from "../../utils/httpError";
 import axios, { AxiosError } from "axios";
@@ -53,7 +53,11 @@ export async function generateHandler(
   }
 }
 
-export async function generateUpdateHandler(req: Request, res: Response) {
+export async function generateUpdateHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const { prompt, html, css } = req.body;
 
@@ -65,8 +69,18 @@ export async function generateUpdateHandler(req: Request, res: Response) {
 
     const result = await updateHTML({ prompt, html, css });
     return res.status(200).json(result);
-  } catch (err) {
-    console.error("Error in generateUpdateHandler:", err);
-    return res.status(500).json({ error: "Update failed" });
+  } catch (error: unknown) {
+    const err = error as AxiosError;
+
+    if (err.response?.status === 429) {
+      return next(
+        createHttpError(
+          "Too many requests to AI. Please try again after some time.",
+          429
+        )
+      );
+    }
+
+    next(error);
   }
 }

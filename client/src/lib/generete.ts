@@ -20,3 +20,23 @@ export const generateHTML = async (
 
   return response.data;
 };
+
+interface UpdateRequest {
+  prompt: string;
+  html: string;
+  css: string;
+}
+
+export const updateBuilderContent = async ({
+  prompt,
+  html,
+  css,
+}: UpdateRequest) => {
+  const response = await axiosInstance.post("/generate/update", {
+    prompt,
+    html,
+    css,
+  });
+
+  return response.data;
+};

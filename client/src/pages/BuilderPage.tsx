@@ -3,6 +3,7 @@ import grapesjs from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/store";
+import { updateBuilderContent } from "../lib/generete";
 
 const BuilderPage = () => {
   const editorRef = useRef<HTMLDivElement | null>(null);
@@ -92,20 +93,19 @@ const BuilderPage = () => {
         generateBtn.onclick = async () => {
           const prompt = textarea.value.trim();
           if (!prompt) return;
-
+          const currentHtml = editor.getHtml();
+          const currentCss = editor.getCss() || "";
           generateBtn.innerText = "Thinking...";
           generateBtn.disabled = true;
-
           try {
-            const res = await fetch("http://localhost:5000/api/ai-generate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt }),
+            const { html, css } = await updateBuilderContent({
+              prompt,
+              html: currentHtml,
+              css: currentCss,
             });
 
-            const data = await res.json();
-            const wrapper = editor.DomComponents.getWrapper();
-            wrapper.append(data.html);
+            editor.setComponents(html || "");
+            editor.setStyle(css || "");
 
             textarea.value = "";
           } catch (err) {

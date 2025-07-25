@@ -11,6 +11,7 @@ export type PromptSchema = {
   tone?: string;
   font?: string;
   language?: string;
+  provider?: string;
   rawPrompt?: string;
 };
 type HTMLCSSResponse = {
@@ -22,6 +23,7 @@ type ClarificationResponse = {
   type: "clarification";
   message: string;
   questions?: string[];
+  originalPrompt: string;
 };
 
 type GenerateHTMLResponse = HTMLCSSResponse | ClarificationResponse;

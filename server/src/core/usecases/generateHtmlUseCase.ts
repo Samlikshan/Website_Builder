@@ -7,7 +7,7 @@ export async function generateHTML(
   prompt: string,
   provider: "groq" | "openai"
 ): Promise<{ html: string; css: string }> {
-  logPrompt(prompt);
+  logPrompt(prompt, provider);
   const response = await callAI(prompt, SystemPrompts.DEFAULT, provider);
 
   let { html, css } = extractHtmlAndCss(response);

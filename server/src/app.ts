@@ -16,6 +16,8 @@ app.use(
   })
 );
 
+app.use(morgan("dev"));
+
 app.use(cors(corsOptions));
 
 app.use(express.json());
